@@ -1,7 +1,7 @@
 import ffmpeg
 import os
 from pathlib import Path
-from pytube import YouTube
+from pytube import Playlist, YouTube
 
 
 def youtube_to_mp3(url, outdir):
@@ -47,10 +47,19 @@ def youtube_to_mp4(url, outdir):
     if os.path.exists(a_file):
         os.remove(a_file)
 
+def playlist_to_mp3(url, outdir):
+    """Download mp3 files from a YouTube playlist url."""
+    p = Playlist(url)
+    for yt_url in p:
+        youtube_to_mp3(yt_url, outdir)
+
 
 if __name__ == '__main__':
+    playlist_url = 'https://www.youtube.com/watch?v=YudHcBIxlYw&list=PLMGwXbxvTnARYX3nP-Boeur4VCJiCoewB'
     url = 'https://www.youtube.com/watch?v=ioNng23DkIM'
-    outdir = '/home/Mike/sdcard/'
+    outdir = '/home/Mike/sdcard/Music/'
 
     # youtube_to_mp3(url, outdir)
-    youtube_to_mp4(url, outdir)
+    # youtube_to_mp4(url, outdir)
+    playlist_to_mp3(playlist_url, outdir)
+
