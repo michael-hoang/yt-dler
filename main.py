@@ -1,7 +1,7 @@
 import ffmpeg
 import os
 from pathlib import Path
-from PyQt5.QtWidgets import QApplication, QLabel
+from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
 from pytube import Playlist, YouTube
 
 
@@ -64,5 +64,13 @@ if __name__ == '__main__':
     # youtube_to_mp4(url, outdir)
     # playlist_to_mp3(playlist_url, outdir)
 
-
-
+app = QApplication([])
+window = QWidget()
+layout = QVBoxLayout()
+layout.addWidget(QPushButton('Top'))
+layout.addWidget(QPushButton('Bottom'))
+window.setLayout(layout)
+window.show()
+label = QLabel('Hello World!')
+label.show()
+app.exec()
