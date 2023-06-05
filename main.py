@@ -1,6 +1,7 @@
 import ffmpeg
 import os
 from pathlib import Path
+from PyQt5.QtWidgets import QApplication, QLabel
 from pytube import Playlist, YouTube
 
 
@@ -61,5 +62,7 @@ if __name__ == '__main__':
 
     # youtube_to_mp3(url, outdir)
     # youtube_to_mp4(url, outdir)
-    playlist_to_mp3(playlist_url, outdir)
+    # playlist_to_mp3(playlist_url, outdir)
+
+
 
