@@ -1,7 +1,7 @@
 import ffmpeg
 import os
 from pathlib import Path
-from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
 from pytube import Playlist, YouTube
 
 
