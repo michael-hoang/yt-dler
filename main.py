@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QFont, QPixmap
 from pytube import Playlist, YouTube
-from pytube.exceptions import RegexMatchError
+from pytube.exceptions import RegexMatchError, VideoUnavailable
 
 
 class YouTubeDownloader(QWidget):
@@ -49,6 +49,7 @@ class YouTubeDownloader(QWidget):
 
         # Attributes
         self.youtube = None
+
 
     # GUI Creation Methods
     def create_youtube_label(self) -> QLabel:
@@ -126,14 +127,14 @@ class YouTubeDownloader(QWidget):
 
     def search_url(self) -> YouTube:
         """Create a YouTube object from the inputted URL."""
+        # Reset YouTube object
+        self.youtube = None
         url = self.url_bar.text()
         try:
-            yt = YouTube(url, use_oauth=True, allow_oauth_cache=True)
-        except RegexMatchError:
-            print('Search failed.')
-        else:
-            self.youtube = yt
+            self.youtube = YouTube(url, use_oauth=True, allow_oauth_cache=True)
             self.display_title()
+        except (RegexMatchError, VideoUnavailable):
+            self.title_label.setText('Search failed.')
 
     def display_title(self):
         """Display the title of the video."""
