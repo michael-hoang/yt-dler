@@ -67,7 +67,7 @@ class YouTubeDownloader(QWidget):
     def create_url_search_widgets(self) -> QHBoxLayout:
         """Create widgets to search YouTube URL."""
         layout = QHBoxLayout()
-        label = QLabel('URL: ')
+        label = QLabel('URL:')
         self.url_bar = QLineEdit()
         btn = QPushButton('Search')
         btn.clicked.connect(self.search_url)
@@ -106,7 +106,7 @@ class YouTubeDownloader(QWidget):
     def create_output_widgets(self) -> QHBoxLayout:
         """Create widgets to select output folder."""
         layout = QHBoxLayout()
-        label = QLabel('Output: ')
+        label = QLabel('Output:')
         line_edit = QLineEdit()
         btn = QPushButton('Browse')
 
