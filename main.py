@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
     QLineEdit, QRadioButton, QComboBox, QProgressBar
 )
-from PyQt6.QtGui import QFont, QPixmap
+from PyQt6.QtGui import QFont, QColor, QPixmap
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
 
@@ -82,9 +82,8 @@ class YouTubeDownloader(QWidget):
         """Create widgets to display video title and thumbnail."""
         layout = QVBoxLayout()
         self.title_label = QLabel('Video Title')
-        pixmap = QPixmap('./thumbnail.png')
         self.thumbnail_label = QLabel()
-        self.thumbnail_label.setPixmap(pixmap)
+        self.display_black_thumbnail()
 
         layout.addWidget(self.title_label)
         layout.addWidget(self.thumbnail_label)
@@ -141,6 +140,7 @@ class YouTubeDownloader(QWidget):
             self.display_thumbnail()
         except (RegexMatchError, VideoUnavailable):
             self.title_label.setText('Search failed.')
+            self.display_black_thumbnail()
 
     def display_title(self):
         """Display the video title."""
@@ -158,31 +158,11 @@ class YouTubeDownloader(QWidget):
             resized_pixmap = pixmap.scaled(360, 202)
             self.thumbnail_label.setPixmap(resized_pixmap)
 
-
-
-        # Create hidden temp thumbnail img
-
-    def _dl_tmp_thumbnail(self, img_url) -> str:
-        """
-        Download a temporary video thumbnail image to display.
-        Returns the path to the temprary thumbnail image file.
-        """
-        response = requests.get(img_url)
-        if response.status_code == 200:
-            path = self._get_exe_script_path()
-            outfile = os.path.join(path, '.tmp_thumbnail.png')
-            with open(outfile) as f:
-                f.write(response.content)
-
-
-    def _get_exe_script_path(self) -> str:
-        """Return the path to the current executable or script file."""
-        if getattr(sys, 'frozen', False):
-            path = os.path.dirname(sys.executable)
-        else:
-            path = os.path.dirname(os.path.abspath(__file__))
-
-        return path
+    def display_black_thumbnail(self):
+        """Display a black thumbnail."""
+        pixmap = QPixmap(360, 202)
+        pixmap.fill(QColor(0, 0, 0))
+        self.thumbnail_label.setPixmap(pixmap)
 
 
 
