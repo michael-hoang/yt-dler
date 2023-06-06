@@ -23,6 +23,10 @@ class YouTubeDownloader(QWidget):
         self.url_bar = None
         self.title_label = None
         self.thumbnail_label = None
+        self.combo_box = None
+
+        self.a_streams = []
+        self.v_streams = []
 
         # self.setGeometry(200, 200, 300, 300)
         self.setWindowTitle('YouTube Downloader')
@@ -95,11 +99,11 @@ class YouTubeDownloader(QWidget):
         layout = QHBoxLayout()
         a_rbtn = QRadioButton('Audio (mp3)')
         v_rbtn = QRadioButton('Video (mp4)')
-        combo = QComboBox()
+        self.combo_box = QComboBox()
         
         layout.addWidget(a_rbtn)
         layout.addWidget(v_rbtn)
-        layout.addWidget(combo)
+        layout.addWidget(self.combo_box)
 
         return layout
     
@@ -141,6 +145,8 @@ class YouTubeDownloader(QWidget):
         except (RegexMatchError, VideoUnavailable):
             self.title_label.setText('Search failed.')
             self.display_black_thumbnail()
+        else:
+            self.get_streams()
 
     def display_title(self):
         """Display the video title."""
@@ -163,7 +169,17 @@ class YouTubeDownloader(QWidget):
         pixmap = QPixmap(360, 202)
         pixmap.fill(QColor(0, 0, 0))
         self.thumbnail_label.setPixmap(pixmap)
-
+        
+    def get_streams(self):
+        """
+        Get lists of all the streams for both audio and video.
+        Video Codec: vp9
+        """
+        streams = self.youtube.streams
+        a_streams = streams.filter(only_audio=True)
+        v_streams = streams.filter(only_video=True)
+        for stream in v_streams:
+            print(stream)
 
 
 
