@@ -1,8 +1,17 @@
 import ffmpeg
 import os
+import sys
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
 from pytube import Playlist, YouTube
+
+
+class YouTubeDownloader(QWidget):
+    """Graphical user interface for downloading YouTube audio and videos."""
+    def __init__(self):
+        super().__init__()
+
+        self.setGeometry(200, 200, 800, 600)
 
 
 def youtube_to_mp3(url, outdir):
@@ -64,13 +73,7 @@ if __name__ == '__main__':
     # youtube_to_mp4(url, outdir)
     # playlist_to_mp3(playlist_url, outdir)
 
-app = QApplication([])
-window = QWidget()
-layout = QVBoxLayout()
-layout.addWidget(QPushButton('Top'))
-layout.addWidget(QPushButton('Bottom'))
-window.setLayout(layout)
-window.show()
-label = QLabel('Hello World!')
-label.show()
-app.exec()
+    app = QApplication(sys.argv)
+    yt = YouTubeDownloader()
+    yt.show()
+    sys.exit(app.exec())
