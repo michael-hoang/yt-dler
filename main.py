@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont, QColor, QPixmap
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
+from pprint import pprint
 
 
 class YouTubeDownloader(QWidget):
@@ -175,11 +176,34 @@ class YouTubeDownloader(QWidget):
         Get lists of all the streams for both audio and video.
         Video Codec: vp9
         """
+        v_options = {}
         streams = self.youtube.streams
-        a_streams = streams.filter(only_audio=True)
-        v_streams = streams.filter(only_video=True)
-        for stream in v_streams:
-            print(stream)
+        highest_bitrate_a_stream = streams.filter(only_audio=True).order_by('bitrate').last()
+        v_prog_streams = streams.filter(progressive=True).order_by('resolution')
+        v_dash_streams = streams.filter(progressive=False, only_video=True).order_by('resolution')
+        for stream in v_prog_streams:
+            quality = f'{stream.resolution}, {stream.fps}fps'
+            v_options[quality] = stream
+           
+        for stream in v_dash_streams:
+            # Remove the last 'p'
+            res = stream.resolution[:-1]
+            if int(res) > 720:
+                quality = f'{stream.resolution}, {stream.fps}fps [{stream.codecs[0]}]'
+                v_options[quality] = stream
+
+
+        print(v_options)
+
+        video_duration = self.youtube.length
+            
+    
+            
+              
+    def get_available_parameters(self):
+        """Get available parameters"""
+
+        
 
 
 
