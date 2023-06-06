@@ -1,5 +1,6 @@
 import ffmpeg
 import os
+import requests
 import sys
 from pathlib import Path
 from PyQt6.QtWidgets import (
@@ -14,7 +15,14 @@ from pytube.exceptions import RegexMatchError, VideoUnavailable
 class YouTubeDownloader(QWidget):
     """Graphical user interface for downloading YouTube audio and videos."""
     def __init__(self):
+        """Initialize the GUI and its attributes."""
         super().__init__()
+
+        # Attributes
+        self.youtube = None
+        self.url_bar = None
+        self.title_label = None
+        self.thumbnail_label = None
 
         # self.setGeometry(200, 200, 300, 300)
         self.setWindowTitle('YouTube Downloader')
@@ -47,9 +55,6 @@ class YouTubeDownloader(QWidget):
 
         self.setLayout(layout)
 
-        # Attributes
-        self.youtube = None
-
 
     # GUI Creation Methods
     def create_youtube_label(self) -> QLabel:
@@ -78,11 +83,11 @@ class YouTubeDownloader(QWidget):
         layout = QVBoxLayout()
         self.title_label = QLabel('Video Title')
         pixmap = QPixmap('./thumbnail.png')
-        thumbnail_label = QLabel()
-        thumbnail_label.setPixmap(pixmap)
+        self.thumbnail_label = QLabel()
+        self.thumbnail_label.setPixmap(pixmap)
 
         layout.addWidget(self.title_label)
-        layout.addWidget(thumbnail_label)
+        layout.addWidget(self.thumbnail_label)
 
         return layout
     
@@ -133,14 +138,54 @@ class YouTubeDownloader(QWidget):
         try:
             self.youtube = YouTube(url, use_oauth=True, allow_oauth_cache=True)
             self.display_title()
+            self.display_thumbnail()
         except (RegexMatchError, VideoUnavailable):
             self.title_label.setText('Search failed.')
 
     def display_title(self):
-        """Display the title of the video."""
+        """Display the video title."""
         title = self.youtube.title
         self.title_label.setText(title)
-        
+    
+    def display_thumbnail(self):
+        """Display the video thumbnail."""
+        thumbnail_url = self.youtube.thumbnail_url
+        response = requests.get(thumbnail_url)
+        if response.status_code == 200:
+            img_data = response.content
+            pixmap = QPixmap()
+            pixmap.loadFromData(img_data)
+            resized_pixmap = pixmap.scaled(360, 202)
+            self.thumbnail_label.setPixmap(resized_pixmap)
+
+
+
+        # Create hidden temp thumbnail img
+
+    def _dl_tmp_thumbnail(self, img_url) -> str:
+        """
+        Download a temporary video thumbnail image to display.
+        Returns the path to the temprary thumbnail image file.
+        """
+        response = requests.get(img_url)
+        if response.status_code == 200:
+            path = self._get_exe_script_path()
+            outfile = os.path.join(path, '.tmp_thumbnail.png')
+            with open(outfile) as f:
+                f.write(response.content)
+
+
+    def _get_exe_script_path(self) -> str:
+        """Return the path to the current executable or script file."""
+        if getattr(sys, 'frozen', False):
+            path = os.path.dirname(sys.executable)
+        else:
+            path = os.path.dirname(os.path.abspath(__file__))
+
+        return path
+
+
+
 
 def youtube_to_mp3(url, outdir):
     """Download mp3 file from a YouTube url."""
