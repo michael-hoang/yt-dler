@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
-    QLineEdit, QRadioButton, QComboBox
+    QLineEdit, QRadioButton, QComboBox, QProgressBar
 )
 from PyQt6.QtGui import QFont, QPixmap
 from pytube import Playlist, YouTube
@@ -15,7 +15,7 @@ class YouTubeDownloader(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setGeometry(200, 200, 200, 200)
+        # self.setGeometry(200, 200, 300, 300)
         self.setWindowTitle('YouTube Downloader')
 
         layout = QVBoxLayout()
@@ -35,6 +35,14 @@ class YouTubeDownloader(QWidget):
         # 4. Media Settings
         media_settings = self.create_media_settings()
         layout.addLayout(media_settings)
+
+        # 5. Output
+        output = self.create_output()
+        layout.addLayout(output)
+
+        # 6. Download progress
+        dl_progress = self.create_download_progress()
+        layout.addLayout(dl_progress)
 
         self.setLayout(layout)
 
@@ -61,7 +69,7 @@ class YouTubeDownloader(QWidget):
     
     def create_video_info(self) -> QHBoxLayout:
         """Create widgets to display video title and thumbnail."""
-        layout = QHBoxLayout()
+        layout = QVBoxLayout()
         title_label = QLabel('Video Title')
         pixmap = QPixmap('./thumbnail.png')
         thumbnail_label = QLabel()
@@ -82,6 +90,30 @@ class YouTubeDownloader(QWidget):
         layout.addWidget(a_rbtn)
         layout.addWidget(v_rbtn)
         layout.addWidget(combo)
+
+        return layout
+    
+    def create_output(self) -> QHBoxLayout:
+        """Create widgets to select output folder."""
+        layout = QHBoxLayout()
+        label = QLabel('Output: ')
+        line_edit = QLineEdit()
+        btn = QPushButton('Browse')
+
+        layout.addWidget(label)
+        layout.addWidget(line_edit)
+        layout.addWidget(btn)
+
+        return layout
+
+    def create_download_progress(self) -> QHBoxLayout:
+        """Create widgets to display download progress bar and to download media."""
+        layout = QHBoxLayout()
+        progress = QProgressBar()
+        dl_btn = QPushButton('Download')
+
+        layout.addWidget(progress)
+        layout.addWidget(dl_btn)
 
         return layout
 
