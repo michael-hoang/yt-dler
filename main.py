@@ -2,7 +2,10 @@ import ffmpeg
 import os
 import sys
 from pathlib import Path
-from PyQt6.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import (
+    QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+)
+from PyQt6.QtGui import QFont
 from pytube import Playlist, YouTube
 
 
@@ -12,6 +15,25 @@ class YouTubeDownloader(QWidget):
         super().__init__()
 
         self.setGeometry(200, 200, 800, 600)
+        self.setWindowTitle('YouTube Downloader')
+
+        # 1. YouTube Downloader Label
+        self.create_youtube_label()
+
+        # 2. URL Search
+
+
+
+    def create_youtube_label(self):
+        """Create YouTube Downloader label."""
+        label = QLabel('YouTube Downloader', parent=self)
+        label.setFont(QFont('Sanserif', 20))
+
+    def create_url_search_widgets(self):
+        """Create widgets to search YouTube URL."""
+
+
+
 
 
 def youtube_to_mp3(url, outdir):
