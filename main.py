@@ -38,19 +38,19 @@ class YouTubeDownloader(QWidget):
         layout.addLayout(url_search)
 
         # 3. Video Info
-        video_info = self.create_video_info()
+        video_info = self.create_video_info_widgets()
         layout.addLayout(video_info)
 
         # 4. Media Settings
-        media_settings = self.create_media_settings()
+        media_settings = self.create_media_settings_widgets()
         layout.addLayout(media_settings)
 
         # 5. Output
-        output = self.create_output()
+        output = self.create_output_widgets()
         layout.addLayout(output)
 
         # 6. Download progress
-        dl_progress = self.create_download_progress()
+        dl_progress = self.create_download_progress_widgets()
         layout.addLayout(dl_progress)
 
         self.setLayout(layout)
@@ -78,7 +78,7 @@ class YouTubeDownloader(QWidget):
 
         return layout
     
-    def create_video_info(self) -> QHBoxLayout:
+    def create_video_info_widgets(self) -> QHBoxLayout:
         """Create widgets to display video title and thumbnail."""
         layout = QVBoxLayout()
         self.title_label = QLabel('Video Title')
@@ -90,7 +90,7 @@ class YouTubeDownloader(QWidget):
 
         return layout
     
-    def create_media_settings(self) -> QHBoxLayout:
+    def create_media_settings_widgets(self) -> QHBoxLayout:
         """Create widgets to select the media settings."""
         layout = QHBoxLayout()
         a_rbtn = QRadioButton('Audio (mp3)')
@@ -103,7 +103,7 @@ class YouTubeDownloader(QWidget):
 
         return layout
     
-    def create_output(self) -> QHBoxLayout:
+    def create_output_widgets(self) -> QHBoxLayout:
         """Create widgets to select output folder."""
         layout = QHBoxLayout()
         label = QLabel('Output: ')
@@ -116,7 +116,7 @@ class YouTubeDownloader(QWidget):
 
         return layout
 
-    def create_download_progress(self) -> QHBoxLayout:
+    def create_download_progress_widgets(self) -> QHBoxLayout:
         """Create widgets to display download progress bar and to download media."""
         layout = QHBoxLayout()
         progress = QProgressBar()
