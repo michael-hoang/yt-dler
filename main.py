@@ -3,7 +3,8 @@ import os
 import sys
 from pathlib import Path
 from PyQt6.QtWidgets import (
-    QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+    QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
+    QLineEdit
 )
 from PyQt6.QtGui import QFont
 from pytube import Playlist, YouTube
@@ -17,22 +18,38 @@ class YouTubeDownloader(QWidget):
         self.setGeometry(200, 200, 800, 600)
         self.setWindowTitle('YouTube Downloader')
 
+        layout = QVBoxLayout()
+
         # 1. YouTube Downloader Label
-        self.create_youtube_label()
+        yt_label = self.create_youtube_label()
+        layout.addWidget(yt_label)
 
         # 2. URL Search
+        url_search = self.create_url_search_widgets()
+        layout.addLayout(url_search)
+        
+        self.setLayout(layout)
 
 
-
-    def create_youtube_label(self):
+    def create_youtube_label(self) -> QLabel:
         """Create YouTube Downloader label."""
-        label = QLabel('YouTube Downloader', parent=self)
+        label = QLabel('YouTube Downloader')
         label.setFont(QFont('Sanserif', 20))
 
-    def create_url_search_widgets(self):
+        return label
+
+    def create_url_search_widgets(self) -> QHBoxLayout:
         """Create widgets to search YouTube URL."""
+        layout = QHBoxLayout()
+        label = QLabel('URL: ')
+        line_edit = QLineEdit()
+        btn = QPushButton('Search')
 
+        layout.addWidget(label)
+        layout.addWidget(line_edit)
+        layout.addWidget(btn)
 
+        return layout
 
 
 
