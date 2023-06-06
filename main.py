@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QFont, QPixmap
 from pytube import Playlist, YouTube
+from pytube.exceptions import RegexMatchError
 
 
 class YouTubeDownloader(QWidget):
@@ -46,7 +47,10 @@ class YouTubeDownloader(QWidget):
 
         self.setLayout(layout)
 
+        # Attributes
+        self.youtube = None
 
+    # GUI Creation Methods
     def create_youtube_label(self) -> QLabel:
         """Create YouTube Downloader label."""
         label = QLabel('YouTube Downloader')
@@ -58,11 +62,12 @@ class YouTubeDownloader(QWidget):
         """Create widgets to search YouTube URL."""
         layout = QHBoxLayout()
         label = QLabel('URL: ')
-        line_edit = QLineEdit()
+        self.url_bar = QLineEdit()
         btn = QPushButton('Search')
+        btn.clicked.connect(self.search_url)
 
         layout.addWidget(label)
-        layout.addWidget(line_edit)
+        layout.addWidget(self.url_bar)
         layout.addWidget(btn)
 
         return layout
@@ -70,12 +75,12 @@ class YouTubeDownloader(QWidget):
     def create_video_info(self) -> QHBoxLayout:
         """Create widgets to display video title and thumbnail."""
         layout = QVBoxLayout()
-        title_label = QLabel('Video Title')
+        self.title_label = QLabel('Video Title')
         pixmap = QPixmap('./thumbnail.png')
         thumbnail_label = QLabel()
         thumbnail_label.setPixmap(pixmap)
 
-        layout.addWidget(title_label)
+        layout.addWidget(self.title_label)
         layout.addWidget(thumbnail_label)
 
         return layout
@@ -117,6 +122,24 @@ class YouTubeDownloader(QWidget):
 
         return layout
 
+    # YouTube Downloader Methods
+
+    def search_url(self) -> YouTube:
+        """Create a YouTube object from the inputted URL."""
+        url = self.url_bar.text()
+        try:
+            yt = YouTube(url, use_oauth=True, allow_oauth_cache=True)
+        except RegexMatchError:
+            print('Search failed.')
+        else:
+            self.youtube = yt
+            self.display_title()
+
+    def display_title(self):
+        """Display the title of the video."""
+        title = self.youtube.title
+        self.title_label.setText(title)
+        
 
 def youtube_to_mp3(url, outdir):
     """Download mp3 file from a YouTube url."""
