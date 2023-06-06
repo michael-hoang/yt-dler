@@ -4,9 +4,9 @@ import sys
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
-    QLineEdit
+    QLineEdit, QRadioButton, QComboBox
 )
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QPixmap
 from pytube import Playlist, YouTube
 
 
@@ -15,7 +15,7 @@ class YouTubeDownloader(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setGeometry(200, 200, 800, 600)
+        self.setGeometry(200, 200, 200, 200)
         self.setWindowTitle('YouTube Downloader')
 
         layout = QVBoxLayout()
@@ -27,7 +27,15 @@ class YouTubeDownloader(QWidget):
         # 2. URL Search
         url_search = self.create_url_search_widgets()
         layout.addLayout(url_search)
-        
+
+        # 3. Video Info
+        video_info = self.create_video_info()
+        layout.addLayout(video_info)
+
+        # 4. Media Settings
+        media_settings = self.create_media_settings()
+        layout.addLayout(media_settings)
+
         self.setLayout(layout)
 
 
@@ -50,7 +58,32 @@ class YouTubeDownloader(QWidget):
         layout.addWidget(btn)
 
         return layout
+    
+    def create_video_info(self) -> QHBoxLayout:
+        """Create widgets to display video title and thumbnail."""
+        layout = QHBoxLayout()
+        title_label = QLabel('Video Title')
+        pixmap = QPixmap('./thumbnail.png')
+        thumbnail_label = QLabel()
+        thumbnail_label.setPixmap(pixmap)
 
+        layout.addWidget(title_label)
+        layout.addWidget(thumbnail_label)
+
+        return layout
+    
+    def create_media_settings(self) -> QHBoxLayout:
+        """Create widgets to select the media settings."""
+        layout = QHBoxLayout()
+        a_rbtn = QRadioButton('Audio (mp3)')
+        v_rbtn = QRadioButton('Video (mp4)')
+        combo = QComboBox()
+        
+        layout.addWidget(a_rbtn)
+        layout.addWidget(v_rbtn)
+        layout.addWidget(combo)
+
+        return layout
 
 
 def youtube_to_mp3(url, outdir):
