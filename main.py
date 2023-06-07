@@ -24,9 +24,12 @@ class YouTubeDownloader(QWidget):
         self.url_bar = None
         self.title_label = None
         self.thumbnail_label = None
+        self.a_rbtn = None
+        self.v_rbtn = None
         self.combo_box = None
         self.a_stream = None
         self.v_streams = {}
+        self.dl_btn = None
 
         self.setGeometry(200, 200, 560, 300)
         self.setWindowTitle('YouTube Downloader')
@@ -97,12 +100,21 @@ class YouTubeDownloader(QWidget):
     def create_media_settings_widgets(self) -> QHBoxLayout:
         """Create widgets to select the media settings."""
         layout = QHBoxLayout()
-        a_rbtn = QRadioButton('Audio (mp3) - Highest')
-        v_rbtn = QRadioButton('Video (mp4)')
-        self.combo_box = QComboBox()
         
-        layout.addWidget(a_rbtn)
-        layout.addWidget(v_rbtn)
+        self.a_rbtn = QRadioButton('Audio (mp3) - Highest')
+        self.a_rbtn.click()
+        self.a_rbtn.toggled.connect(self.radio_selected)
+        self.a_rbtn.setEnabled(False)
+
+        self.v_rbtn = QRadioButton('Video (mp4)')
+        self.v_rbtn.toggled.connect(self.radio_selected)
+        self.v_rbtn.setEnabled(False)
+
+        self.combo_box = QComboBox()
+        self.combo_box.setEnabled(False)
+        
+        layout.addWidget(self.a_rbtn)
+        layout.addWidget(self.v_rbtn)
         layout.addWidget(self.combo_box)
 
         return layout
@@ -124,10 +136,11 @@ class YouTubeDownloader(QWidget):
         """Create widgets to display download progress bar and to download media."""
         layout = QHBoxLayout()
         progress = QProgressBar()
-        dl_btn = QPushButton('Download')
+        self.dl_btn = QPushButton('Download')
+        self.dl_btn.setEnabled(False)
 
         layout.addWidget(progress)
-        layout.addWidget(dl_btn)
+        layout.addWidget(self.dl_btn)
 
         return layout
 
@@ -147,6 +160,8 @@ class YouTubeDownloader(QWidget):
         except (RegexMatchError, VideoUnavailable):
             self.title_label.setText('Search failed.')
         else:
+            self.a_rbtn.setEnabled(True)
+            self.v_rbtn.setEnabled(True)
             self.get_streams()
             self.populate_combobox()
 
@@ -203,17 +218,32 @@ class YouTubeDownloader(QWidget):
         for stream in reversed(self.v_streams):
             self.combo_box.addItem(stream)
 
+    def radio_selected(self):
+        """Enable or disable the combobox when a radiobutton is selected."""
+        radio_btn = self.sender()
+        if radio_btn.isChecked():
+            if radio_btn.text() == 'Video (mp4)':
+                self.combo_box.setEnabled(True)
+            else:
+                self.combo_box.setEnabled(False)
+
     def reset_attributes(self):
         """
         Remove all of the video data currently stored in the YouTubeDownloader object.
+        Reset the state of all widgets.
         """
         self.youtube = None
         self.streams = None
         self.title_label.clear()
         self.display_black_thumbnail()
-        self.combo_box.clear()
+        self.a_rbtn.click()
+        self.a_rbtn.setEnabled(False)
+        self.v_rbtn.setEnabled(False)
+        self.combo_box.setEnabled(False)
         self.a_stream = None
         self.v_streams = {}
+        self.combo_box.clear()
+        self.dl_btn.setEnabled(False)
  
     
 
