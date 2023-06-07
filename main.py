@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont, QColor, QPixmap
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
+from urllib.error import URLError
 
 
 class YouTubeDownloader(QWidget):
@@ -158,7 +159,7 @@ class YouTubeDownloader(QWidget):
             self.streams = self.youtube.streams
             self.display_title()
             self.display_thumbnail()
-        except (RegexMatchError, VideoUnavailable):
+        except (RegexMatchError, VideoUnavailable, URLError):
             self.title_label.setText('Search failed.')
         else:
             self.a_rbtn.setEnabled(True)
