@@ -209,16 +209,16 @@ class YouTubeDownloader(QWidget):
        
         for stream in v_prog_streams:
             quality = f'{stream.resolution}, {stream.fps}fps'
-            self.v_streams[quality] = stream
-            self.v_streams['Progressive'] = True
+            self.v_streams[quality] = {'stream': stream}
+            self.v_streams[quality]['progressive'] = True
            
         for stream in v_dash_streams:
             # Remove the last 'p'
             res = stream.resolution[:-1]
             if int(res) > 720:
                 quality = f'{stream.resolution}, {stream.fps}fps [{stream.codecs[0]}]'
-                self.v_streams[quality] = stream
-                self.v_streams['Progressive'] = False
+                self.v_streams[quality] = {'stream': stream}
+                self.v_streams[quality]['progressive'] = False
 
     def populate_combobox(self):
         """Populate the combobox with available video streams."""
@@ -246,9 +246,56 @@ class YouTubeDownloader(QWidget):
         output_folder = self.output_bar.text()
         if os.path.exists(output_folder):
             if self.a_rbtn.isChecked():
-                pass
+                self.download_mp3(output_folder)
             elif self.v_rbtn.isChecked():
-                pass
+                quality = self.combo_box.currentText()
+                if not self.v_rbtn[quality]['progressive']:
+                    self.download_mp4_dash(output_folder, quality)
+                else:
+                    self.download_mp4_progressive(output_folder, quality)
+
+    def download_mp3(self, output_folder: str) -> str:
+        """
+        Download audio and convert it to mp3.
+        Returns path (str) to the mp3 file.
+        """
+        out_file = self.a_stream.download(output_path=output_folder)
+        # Rename out_file with .mp3 extension
+        root, ext = os.path.splitext(out_file)
+        mp3_file = Path(f'{root}.mp3')
+        os.rename(out_file, mp3_file)
+
+        return mp3_file
+    
+    def download_mp4_progressive(self, output_folder: str, quality: str) -> str:
+        """
+        Download video in mp4 format.
+        Returns path (str) to the mp4 file.
+        """
+        return self.v_streams[quality]['stream'].download(output_path=output_folder)
+    
+    def download_mp4_dash(self, output_folder: str, quality: str) -> str:
+        """
+        Download both the video and audio tracks and merge them together with FFmpeg.
+        Returns path (str) to the mp4 file.
+        """
+        v_track = self.v_streams[quality]['stream'].download(output_path=output_folder, filename='.vtemp')
+        a_track = self.a_stream.download(output_path=output_folder, filename='.atemp')
+
+        video = ffmpeg.input(v_track)
+        audio = ffmpeg.input(a_track)
+
+        # Merge audio and video
+        output_file = os.path.join(output_folder, f'{self.title}.mp4')
+        output = ffmpeg.output(video, audio, output_file, vcodec='copy', acodec='copy')
+        output.run()
+
+        # Remove .atemp and .vtemp
+        if os.path.exists(v_track):
+            os.remove(v_track)
+        
+        if os.path.exists(a_track):
+            os.remove(a_track)
 
     def reset_attributes(self):
         """
