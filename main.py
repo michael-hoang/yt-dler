@@ -148,6 +148,7 @@ class YouTubeDownloader(QWidget):
             self.title_label.setText('Search failed.')
         else:
             self.get_streams()
+            self.populate_combobox()
 
     def display_title(self):
         """Display the video title."""
@@ -178,8 +179,6 @@ class YouTubeDownloader(QWidget):
         # Get highest audio quality stream
         self.a_stream = self.streams.filter(only_audio=True).order_by('bitrate').last()
         self.get_v_streams()
-        for option in reversed(self.v_streams):
-            self.combo_box.addItem(option)
 
         video_duration = self.youtube.length
 
@@ -198,6 +197,11 @@ class YouTubeDownloader(QWidget):
             if int(res) > 720:
                 quality = f'{stream.resolution}, {stream.fps}fps [{stream.codecs[0]}]'
                 self.v_streams[quality] = stream
+
+    def populate_combobox(self):
+        """Populate the combobox with available video streams."""
+        for stream in reversed(self.v_streams):
+            self.combo_box.addItem(stream)
 
     def reset_attributes(self):
         """
