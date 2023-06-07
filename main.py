@@ -201,8 +201,6 @@ class YouTubeDownloader(QWidget):
         self.a_stream = self.streams.filter(only_audio=True).order_by('bitrate').last()
         self.get_v_streams()
 
-        video_duration = self.youtube.length
-
     def get_v_streams(self):
         """Get all of the video streams available for download."""
         v_prog_streams = self.streams.filter(progressive=True).order_by('resolution')
@@ -211,6 +209,7 @@ class YouTubeDownloader(QWidget):
         for stream in v_prog_streams:
             quality = f'{stream.resolution}, {stream.fps}fps'
             self.v_streams[quality] = stream
+            self.v_streams['Progressive'] = True
            
         for stream in v_dash_streams:
             # Remove the last 'p'
@@ -218,6 +217,7 @@ class YouTubeDownloader(QWidget):
             if int(res) > 720:
                 quality = f'{stream.resolution}, {stream.fps}fps [{stream.codecs[0]}]'
                 self.v_streams[quality] = stream
+                self.v_streams['Progressive'] = False
 
     def populate_combobox(self):
         """Populate the combobox with available video streams."""
@@ -244,7 +244,10 @@ class YouTubeDownloader(QWidget):
         """Download the media file to the output folder."""
         output_folder = self.output_bar.text()
         if os.path.exists(output_folder):
-            print('folder exists')
+            if self.a_rbtn.isChecked():
+                pass
+            elif self.v_rbtn.isChecked():
+                pass
 
     def reset_attributes(self):
         """
