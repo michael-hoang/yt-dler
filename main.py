@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
-    QLineEdit, QRadioButton, QComboBox, QProgressBar
+    QLineEdit, QRadioButton, QComboBox, QProgressBar, QFileDialog
 )
 from PyQt6.QtGui import QFont, QColor, QPixmap
 from pytube import Playlist, YouTube
@@ -29,6 +29,7 @@ class YouTubeDownloader(QWidget):
         self.combo_box = None
         self.a_stream = None
         self.v_streams = {}
+        self.output_bar = None
         self.dl_btn = None
 
         self.setGeometry(200, 200, 560, 300)
@@ -102,7 +103,6 @@ class YouTubeDownloader(QWidget):
         layout = QHBoxLayout()
         
         self.a_rbtn = QRadioButton('Audio (mp3) - Highest')
-        self.a_rbtn.click()
         self.a_rbtn.toggled.connect(self.radio_selected)
         self.a_rbtn.setEnabled(False)
 
@@ -123,11 +123,12 @@ class YouTubeDownloader(QWidget):
         """Create widgets to select output folder."""
         layout = QHBoxLayout()
         label = QLabel('Output:')
-        line_edit = QLineEdit()
+        self.output_bar = QLineEdit()
         btn = QPushButton('Browse')
+        btn.clicked.connect(self.browser_folder)
 
         layout.addWidget(label)
-        layout.addWidget(line_edit)
+        layout.addWidget(self.output_bar)
         layout.addWidget(btn)
 
         return layout
@@ -137,7 +138,7 @@ class YouTubeDownloader(QWidget):
         layout = QHBoxLayout()
         progress = QProgressBar()
         self.dl_btn = QPushButton('Download')
-        self.dl_btn.setEnabled(False)
+        self.dl_btn.clicked.connect(self.download)
 
         layout.addWidget(progress)
         layout.addWidget(self.dl_btn)
@@ -162,6 +163,10 @@ class YouTubeDownloader(QWidget):
         else:
             self.a_rbtn.setEnabled(True)
             self.v_rbtn.setEnabled(True)
+            if self.v_rbtn.isChecked():
+                self.combo_box.setEnabled(True)
+            else:
+                self.combo_box.setEnabled(False)
             self.get_streams()
             self.populate_combobox()
 
@@ -219,13 +224,26 @@ class YouTubeDownloader(QWidget):
             self.combo_box.addItem(stream)
 
     def radio_selected(self):
-        """Enable or disable the combobox when a radiobutton is selected."""
-        radio_btn = self.sender()
-        if radio_btn.isChecked():
-            if radio_btn.text() == 'Video (mp4)':
-                self.combo_box.setEnabled(True)
-            else:
-                self.combo_box.setEnabled(False)
+        """
+        Enable or disable the combobox when the video radiobutton is checked
+        or unchecked.
+        """
+        if self.v_rbtn.isChecked():
+            self.combo_box.setEnabled(True)
+        else:
+            self.combo_box.setEnabled(False)
+
+    def browser_folder(self):
+        """Open a folder browsing window."""
+        folder_path = QFileDialog.getExistingDirectory(self, "Select Folder")
+        if folder_path:
+            self.output_bar.setText(folder_path)
+
+    def download(self):
+        """Download the media file to the output folder."""
+        output_folder = self.output_bar.text()
+        if os.path.exists(output_folder):
+            print('folder exists')
 
     def reset_attributes(self):
         """
@@ -236,15 +254,12 @@ class YouTubeDownloader(QWidget):
         self.streams = None
         self.title_label.clear()
         self.display_black_thumbnail()
-        self.a_rbtn.click()
         self.a_rbtn.setEnabled(False)
         self.v_rbtn.setEnabled(False)
         self.combo_box.setEnabled(False)
         self.a_stream = None
         self.v_streams = {}
         self.combo_box.clear()
-        self.dl_btn.setEnabled(False)
- 
     
 
         
