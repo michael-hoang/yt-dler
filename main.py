@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
-    QLineEdit, QRadioButton, QComboBox, QProgressBar, QFileDialog
+    QLineEdit, QRadioButton, QComboBox, QProgressBar, QFileDialog, QCheckBox
 )
 from PyQt6.QtGui import QFont, QColor, QPixmap
 from pytube import Playlist, YouTube
@@ -103,7 +103,11 @@ class YouTubeDownloader(QWidget):
     def create_media_settings_widgets(self) -> QHBoxLayout:
         """Create widgets to select the media settings."""
         layout = QHBoxLayout()
-        
+        rbtn_container = QVBoxLayout()
+        combo_container = QVBoxLayout()
+
+        self.playlist_btn = QCheckBox('Playlist')
+
         self.a_rbtn = QRadioButton('Audio (mp3) - Highest')
         self.a_rbtn.toggled.connect(self.radio_selected)
         self.a_rbtn.setEnabled(False)
@@ -112,12 +116,19 @@ class YouTubeDownloader(QWidget):
         self.v_rbtn.toggled.connect(self.radio_selected)
         self.v_rbtn.setEnabled(False)
 
+        rbtn_container.addWidget(self.a_rbtn)
+        rbtn_container.addWidget(self.v_rbtn)
+        
+        quality_label = QLabel('Quality:')
         self.combo_box = QComboBox()
         self.combo_box.setEnabled(False)
+
+        combo_container.addWidget(quality_label)
+        combo_container.addWidget(self.combo_box)
         
-        layout.addWidget(self.a_rbtn)
-        layout.addWidget(self.v_rbtn)
-        layout.addWidget(self.combo_box)
+        layout.addWidget(self.playlist_btn)
+        layout.addLayout(rbtn_container)
+        layout.addLayout(combo_container)
 
         return layout
     
