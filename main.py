@@ -20,12 +20,13 @@ class YouTubeDownloader(QWidget):
 
         # Attributes
         self.youtube = None
+        self.streams = None
         self.url_bar = None
         self.title_label = None
         self.thumbnail_label = None
         self.combo_box = None
-
-        self.v_options = {}
+        self.a_stream = None
+        self.v_streams = {}
 
         self.setGeometry(200, 200, 560, 300)
         self.setWindowTitle('YouTube Downloader')
@@ -133,17 +134,18 @@ class YouTubeDownloader(QWidget):
     # YouTube Downloader Methods
 
     def search_url(self) -> YouTube:
-        """Create a YouTube object from the inputted URL."""
-        # Reset YouTube object
-        self.youtube = None
+        """
+        Create a YouTube object and initialize available streams from the inputted URL.
+        """
+        self.reset_attributes()
         url = self.url_bar.text()
         try:
             self.youtube = YouTube(url, use_oauth=True, allow_oauth_cache=True)
+            self.streams = self.youtube.streams
             self.display_title()
             self.display_thumbnail()
         except (RegexMatchError, VideoUnavailable):
             self.title_label.setText('Search failed.')
-            self.display_black_thumbnail()
         else:
             self.get_streams()
 
@@ -171,37 +173,45 @@ class YouTubeDownloader(QWidget):
         
     def get_streams(self):
         """
-        Get lists of all the streams for both audio and video.
-        Video Codec: vp9
+        Get audio and video streams from the YouTube object.
         """
-        self.v_options = {}
-        self.combo_box.clear()
-        streams = self.youtube.streams
-        highest_bitrate_a_stream = streams.filter(only_audio=True).order_by('bitrate').last()
-        v_prog_streams = streams.filter(progressive=True).order_by('resolution')
-        v_dash_streams = streams.filter(progressive=False, only_video=True).order_by('resolution')
-        print(v_dash_streams)
+        # Get highest audio quality stream
+        self.a_stream = self.streams.filter(only_audio=True).order_by('bitrate').last()
+        self.get_v_streams()
+        for option in reversed(self.v_streams):
+            self.combo_box.addItem(option)
+
+        video_duration = self.youtube.length
+
+    def get_v_streams(self):
+        """Get all of the video streams available for download."""
+        v_prog_streams = self.streams.filter(progressive=True).order_by('resolution')
+        v_dash_streams = self.streams.filter(progressive=False, only_video=True).order_by('resolution')
+       
         for stream in v_prog_streams:
             quality = f'{stream.resolution}, {stream.fps}fps'
-            self.v_options[quality] = stream
+            self.v_streams[quality] = stream
            
         for stream in v_dash_streams:
             # Remove the last 'p'
             res = stream.resolution[:-1]
             if int(res) > 720:
                 quality = f'{stream.resolution}, {stream.fps}fps [{stream.codecs[0]}]'
-                self.v_options[quality] = stream
+                self.v_streams[quality] = stream
 
-        for option in reversed(self.v_options):
-            self.combo_box.addItem(option)
-
-        video_duration = self.youtube.length
-            
+    def reset_attributes(self):
+        """
+        Remove all of the video data currently stored in the YouTubeDownloader object.
+        """
+        self.youtube = None
+        self.streams = None
+        self.title_label.clear()
+        self.display_black_thumbnail()
+        self.combo_box.clear()
+        self.a_stream = None
+        self.v_streams = {}
+ 
     
-            
-              
-    def get_available_parameters(self):
-        """Get available parameters"""
 
         
 
