@@ -21,6 +21,7 @@ class YouTubeDownloader(QWidget):
 
         # Attributes
         self.youtube = None
+        self.title = None
         self.streams = None
         self.url_bar = None
         self.title_label = None
@@ -173,8 +174,8 @@ class YouTubeDownloader(QWidget):
 
     def display_title(self):
         """Display the video title."""
-        title = self.youtube.title
-        self.title_label.setText(title)
+        self.title = self.youtube.title
+        self.title_label.setText(self.title)
     
     def display_thumbnail(self):
         """Display the video thumbnail."""
@@ -255,6 +256,7 @@ class YouTubeDownloader(QWidget):
         Reset the state of all widgets.
         """
         self.youtube = None
+        self.title = None
         self.streams = None
         self.title_label.clear()
         self.display_black_thumbnail()
