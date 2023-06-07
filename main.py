@@ -260,10 +260,12 @@ class YouTubeDownloader(QWidget):
                 self.download_mp3(output_folder)
             elif self.v_rbtn.isChecked():
                 quality = self.combo_box.currentText()
-                if not self.v_rbtn[quality]['progressive']:
+                if not self.v_streams[quality]['progressive']:
                     self.download_mp4_dash(output_folder, quality)
                 else:
                     self.download_mp4_progressive(output_folder, quality)
+        else:
+            pass
 
     def download_mp3(self, output_folder: str) -> str:
         """
@@ -297,6 +299,7 @@ class YouTubeDownloader(QWidget):
         audio = ffmpeg.input(a_track)
 
         # Merge audio and video
+        output_folder = os.path.normpath(output_folder)
         output_file = os.path.join(output_folder, f'{self.title}.mp4')
         output = ffmpeg.output(video, audio, output_file, vcodec='copy', acodec='copy')
         output.run()
