@@ -71,8 +71,9 @@ class YouTubeDownloader(QWidget):
     # GUI Creation Methods
     def create_youtube_label(self) -> QLabel:
         """Create YouTube Downloader label."""
-        label = QLabel('YouTube Downloader')
-        label.setFont(QFont('Sanserif', 20))
+        label = QLabel('▶ YouTube Downloader 🠟')
+        label.setFont(QFont('Sanserif', 18, 700))
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         return label
 
@@ -310,8 +311,6 @@ class YouTubeDownloader(QWidget):
         merged = ffmpeg.output(video, audio, output_file, vcodec='copy', acodec='copy')
         merged.run()
 
-        # os.rename(output_file, os.path.join(output_folder, f'{self.title}'))
-
         # Remove .atemp and .vtemp
         if os.path.exists(v_track):
             os.remove(v_track)
@@ -337,8 +336,6 @@ class YouTubeDownloader(QWidget):
     
 
         
-
-
 
 def youtube_to_mp3(url, outdir):
     """Download mp3 file from a YouTube url."""
