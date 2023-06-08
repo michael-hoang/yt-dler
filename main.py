@@ -180,7 +180,7 @@ class YouTubeDownloader(QWidget):
             self.title_label.setText('Search failed.')
         else:
             self.format_combo.setEnabled(True)
-            if self.format_combo.currentText() == 'Video':
+            if self.format_combo.currentText() == 'Video (.mp4)':
                 self.quality_combo.setEnabled(True)
             else:
                 self.quality_combo.setEnabled(False)
