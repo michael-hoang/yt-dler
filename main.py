@@ -6,9 +6,10 @@ import sys
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
-    QLineEdit, QRadioButton, QComboBox, QProgressBar, QFileDialog, QCheckBox
+    QLineEdit, QComboBox, QProgressBar, QFileDialog, QCheckBox
 )
 from PyQt6.QtGui import QFont, QColor, QPixmap
+from PyQt6.QtCore import Qt
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
 from urllib.error import URLError
@@ -27,18 +28,18 @@ class YouTubeDownloader(QWidget):
         self.url_bar = None
         self.title_label = None
         self.thumbnail_label = None
-        self.a_rbtn = None
-        self.v_rbtn = None
-        self.combo_box = None
+        self.playlist_btn = None
+        self.format_combo = None
+        self.quality_combo = None
         self.a_stream = None
         self.v_streams = {}
         self.output_bar = None
         self.dl_btn = None
 
-        self.setGeometry(200, 200, 560, 300)
         self.setWindowTitle('YouTube Downloader')
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(20, 20, 20, 20)
 
         # 1. YouTube Downloader Label
         yt_label = self.create_youtube_label()
@@ -78,12 +79,11 @@ class YouTubeDownloader(QWidget):
     def create_url_search_widgets(self) -> QHBoxLayout:
         """Create widgets to search YouTube URL."""
         layout = QHBoxLayout()
-        label = QLabel('URL:')
         self.url_bar = QLineEdit()
+        self.url_bar.setPlaceholderText('Enter YouTube video or playlist URL here')
         btn = QPushButton('Search')
         btn.clicked.connect(self.search_url)
 
-        layout.addWidget(label)
         layout.addWidget(self.url_bar)
         layout.addWidget(btn)
 
@@ -92,56 +92,60 @@ class YouTubeDownloader(QWidget):
     def create_video_info_widgets(self) -> QHBoxLayout:
         """Create widgets to display video title and thumbnail."""
         layout = QVBoxLayout()
-        self.title_label = QLabel('Video Title')
+        self.title_label = QLabel('Liberate those coveted videos!')
         self.thumbnail_label = QLabel()
         self.display_black_thumbnail()
 
-        layout.addWidget(self.title_label)
-        layout.addWidget(self.thumbnail_label)
+        layout.addWidget(self.title_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.thumbnail_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         return layout
     
     def create_media_settings_widgets(self) -> QHBoxLayout:
         """Create widgets to select the media settings."""
         layout = QHBoxLayout()
-        rbtn_container = QVBoxLayout()
-        combo_container = QVBoxLayout()
-
-        self.playlist_btn = QCheckBox('Playlist')
-
-        self.a_rbtn = QRadioButton('Audio (mp3) - Highest')
-        self.a_rbtn.toggled.connect(self.radio_selected)
-        self.a_rbtn.setEnabled(False)
-
-        self.v_rbtn = QRadioButton('Video (mp4)')
-        self.v_rbtn.toggled.connect(self.radio_selected)
-        self.v_rbtn.setEnabled(False)
-
-        rbtn_container.addWidget(self.a_rbtn)
-        rbtn_container.addWidget(self.v_rbtn)
         
-        quality_label = QLabel('Quality:')
-        self.combo_box = QComboBox()
-        self.combo_box.setEnabled(False)
+        self.playlist_btn = QCheckBox('Playlist')
+        self.playlist_btn.setFixedWidth(70)
 
-        combo_container.addWidget(quality_label)
-        combo_container.addWidget(self.combo_box)
+        format_layout = QVBoxLayout()
+        format_label = QLabel('Format:')
+        self.format_combo = QComboBox()
+        self.format_combo.setFixedWidth(140)
+        self.format_combo.addItems([
+            'Audio (.mp3) - Highest',
+            'Audio (.webm) - Highest',
+            'Video'
+        ])
+        format_layout.addWidget(format_label)
+        format_layout.addWidget(self.format_combo)
+        self.format_combo.setCurrentIndex(-1)
+        self.format_combo.currentIndexChanged.connect(self.format_combo_changed)
+        self.format_combo.setEnabled(False)
+        
+        quality_layout = QVBoxLayout()
+        quality_label = QLabel('Quality:')
+        self.quality_combo = QComboBox()
+        self.quality_combo.setFixedWidth(150)
+        quality_layout.addWidget(quality_label)
+        quality_layout.addWidget(self.quality_combo)
+        self.quality_combo.setEnabled(False)
         
         layout.addWidget(self.playlist_btn)
-        layout.addLayout(rbtn_container)
-        layout.addLayout(combo_container)
+        layout.addLayout(format_layout)
+        layout.addLayout(quality_layout)
 
         return layout
     
     def create_output_widgets(self) -> QHBoxLayout:
         """Create widgets to select output folder."""
         layout = QHBoxLayout()
-        label = QLabel('Output:')
+    
         self.output_bar = QLineEdit()
+        self.output_bar.setPlaceholderText('Output directory')
         btn = QPushButton('Browse')
         btn.clicked.connect(self.browser_folder)
 
-        layout.addWidget(label)
         layout.addWidget(self.output_bar)
         layout.addWidget(btn)
 
@@ -175,12 +179,11 @@ class YouTubeDownloader(QWidget):
         except (RegexMatchError, VideoUnavailable, URLError):
             self.title_label.setText('Search failed.')
         else:
-            self.a_rbtn.setEnabled(True)
-            self.v_rbtn.setEnabled(True)
-            if self.v_rbtn.isChecked():
-                self.combo_box.setEnabled(True)
+            self.format_combo.setEnabled(True)
+            if self.format_combo.currentText() == 'Video':
+                self.quality_combo.setEnabled(True)
             else:
-                self.combo_box.setEnabled(False)
+                self.quality_combo.setEnabled(False)
             self.get_streams()
             self.populate_combobox()
 
@@ -191,18 +194,17 @@ class YouTubeDownloader(QWidget):
     
     def display_thumbnail(self):
         """Display the video thumbnail."""
-        thumbnail_url = self.youtube.thumbnail_url
+        thumbnail_url = f'http://img.youtube.com/vi/{self.youtube.video_id}/hqdefault.jpg'
         response = requests.get(thumbnail_url)
         if response.status_code == 200:
-            img_data = response.content
             pixmap = QPixmap()
-            pixmap.loadFromData(img_data)
-            resized_pixmap = pixmap.scaled(360, 202)
+            pixmap.loadFromData(response.content)
+            resized_pixmap = pixmap.scaled(360, 270)
             self.thumbnail_label.setPixmap(resized_pixmap)
 
     def display_black_thumbnail(self):
         """Display a black thumbnail."""
-        pixmap = QPixmap(360, 202)
+        pixmap = QPixmap(360, 270)
         pixmap.fill(QColor(0, 0, 0))
         self.thumbnail_label.setPixmap(pixmap)
         
@@ -235,17 +237,14 @@ class YouTubeDownloader(QWidget):
     def populate_combobox(self):
         """Populate the combobox with available video streams."""
         for stream in reversed(self.v_streams):
-            self.combo_box.addItem(stream)
+            self.quality_combo.addItem(stream)
 
-    def radio_selected(self):
-        """
-        Enable or disable the combobox when the video radiobutton is checked
-        or unchecked.
-        """
-        if self.v_rbtn.isChecked():
-            self.combo_box.setEnabled(True)
+    def format_combo_changed(self):
+        """Enable the Quality combobox when Video is selected."""
+        if self.format_combo.currentText() == 'Video':
+            self.quality_combo.setEnabled(True)
         else:
-            self.combo_box.setEnabled(False)
+            self.quality_combo.setEnabled(False)
 
     def browser_folder(self):
         """Open a folder browsing window."""
@@ -257,10 +256,12 @@ class YouTubeDownloader(QWidget):
         """Download the media file to the output folder."""
         output_folder = self.output_bar.text()
         if os.path.exists(output_folder):
-            if self.a_rbtn.isChecked():
+            if self.format_combo.currentText() == 'Audio (.mp3) - Highest':
+                self.download_mp3(output_folder, mp3=True)
+            elif self.format_combo.currentText() == 'Audio (.webm) - Highest':
                 self.download_mp3(output_folder)
-            elif self.v_rbtn.isChecked():
-                quality = self.combo_box.currentText()
+            elif self.format_combo.currentText() == 'Video':
+                quality = self.quality_combo.currentText()
                 if not self.v_streams[quality]['progressive']:
                     self.download_mp4_dash(output_folder, quality)
                 else:
@@ -268,18 +269,22 @@ class YouTubeDownloader(QWidget):
         else:
             pass
 
-    def download_mp3(self, output_folder: str) -> str:
+    def download_mp3(self, output_folder: str, mp3=False) -> str:
         """
         Download audio and convert it to mp3.
         Returns path (str) to the mp3 file.
         """
-        out_file = self.a_stream.download(output_path=output_folder)
-        # Rename out_file with .mp3 extension
-        root, ext = os.path.splitext(out_file)
-        mp3_file = Path(f'{root}.mp3')
-        os.rename(out_file, mp3_file)
+        audio_file = self.a_stream.download(output_path=output_folder)
 
-        return mp3_file
+        if mp3:
+            # Convert audio file to .mp3
+            root, ext = os.path.splitext(audio_file)
+            mp3_file = Path(f'{root}.mp3')
+            os.rename(audio_file, mp3_file)
+            
+            return mp3_file
+
+        return audio_file
     
     def download_mp4_progressive(self, output_folder: str, quality: str) -> str:
         """
@@ -303,7 +308,7 @@ class YouTubeDownloader(QWidget):
         output_folder = os.path.normpath(output_folder)
         output_file = os.path.join(output_folder, f'{self.title}.mp4')
         merged = ffmpeg.output(video, audio, output_file, vcodec='copy', acodec='copy')
-        merged.run(capture_stdout=True, capture_stderr=True)
+        merged.run()
 
         # os.rename(output_file, os.path.join(output_folder, f'{self.title}'))
 
@@ -324,12 +329,11 @@ class YouTubeDownloader(QWidget):
         self.streams = None
         self.title_label.clear()
         self.display_black_thumbnail()
-        self.a_rbtn.setEnabled(False)
-        self.v_rbtn.setEnabled(False)
-        self.combo_box.setEnabled(False)
+        self.format_combo.setEnabled(False)
+        self.quality_combo.setEnabled(False)
         self.a_stream = None
         self.v_streams = {}
-        self.combo_box.clear()
+        self.quality_combo.clear()
     
 
         
@@ -354,30 +358,6 @@ def youtube_to_mp3(url, outdir):
         print(f'"{yt.title}" has been successfully downloaded')
     else:
         print(f'ERROR: "{yt.title}" could not be downloaded!')
-
-def youtube_to_mp4(url, outdir):
-    """Download mp4 file from a YouTube url."""
-    yt = YouTube(url)
-    # Download adaptive video
-    v_stream = yt.streams.filter(adaptive=True, only_video=True).first()
-    v_file = v_stream.download(output_path=outdir, filename='v_file')
-    # Download adaptive audio
-    a_stream = yt.streams.filter(only_audio=True).last()
-    a_file = a_stream.download(output_path=outdir, filename='a_file')
-
-    video = ffmpeg.input(v_file)
-    audio = ffmpeg.input(a_file)
-    # Combine video and audio
-    output_file = outdir + f'{yt.title}.mp4'
-    output = ffmpeg.output(video, audio, output_file, vcodec='copy', acodec='copy')
-    output.run()
-
-    # Remove a_file and v_file
-    if os.path.exists(v_file):
-        os.remove(v_file)
-    
-    if os.path.exists(a_file):
-        os.remove(a_file)
 
 def playlist_to_mp3(url, outdir):
     """Download mp3 files from a YouTube playlist url."""
