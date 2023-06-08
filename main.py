@@ -257,18 +257,29 @@ class YouTubeDownloader(QWidget):
         """Download the media file to the output folder."""
         output_folder = self.output_bar.text()
         if os.path.exists(output_folder):
-            if self.format_combo.currentText() == 'Audio (.mp3) - Highest':
-                self.download_mp3(output_folder, mp3=True)
-            elif self.format_combo.currentText() == 'Audio (.webm) - Highest':
-                self.download_mp3(output_folder)
-            elif self.format_combo.currentText() == 'Video (.mp4)':
-                quality = self.quality_combo.currentText()
-                if not self.v_streams[quality]['progressive']:
-                    self.download_mp4_dash(output_folder, quality)
-                else:
-                    self.download_mp4_progressive(output_folder, quality)
+            if not self.playlist_btn.isChecked():
+                self.download_single(output_folder)
+            else:
+                print('checked')
         else:
             pass
+
+    def download_single(self, output_folder: str):
+        """Download a single audio or video file."""
+        if self.format_combo.currentText() == 'Audio (.mp3) - Highest':
+            self.download_mp3(output_folder, mp3=True)
+        elif self.format_combo.currentText() == 'Audio (.webm) - Highest':
+            self.download_mp3(output_folder)
+        elif self.format_combo.currentText() == 'Video (.mp4)':
+            quality = self.quality_combo.currentText()
+            if not self.v_streams[quality]['progressive']:
+                self.download_mp4_dash(output_folder, quality)
+            else:
+                self.download_mp4_progressive(output_folder, quality)
+    
+    def download_playlist(self, output_folder: str):
+        """Download all audio or video from a playlist."""
+        
 
     def download_mp3(self, output_folder: str, mp3=False) -> str:
         """
