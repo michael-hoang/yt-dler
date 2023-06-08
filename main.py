@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QLineEdit, QComboBox, QProgressBar, QFileDialog, QCheckBox
 )
 from PyQt6.QtGui import QFont, QColor, QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread, QUrl
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
 from urllib.error import URLError
@@ -115,7 +115,7 @@ class YouTubeDownloader(QWidget):
         self.format_combo.addItems([
             'Audio (.mp3) - Highest',
             'Audio (.webm) - Highest',
-            'Video'
+            'Video (.mp4)'
         ])
         format_layout.addWidget(format_label)
         format_layout.addWidget(self.format_combo)
@@ -241,7 +241,7 @@ class YouTubeDownloader(QWidget):
 
     def format_combo_changed(self):
         """Enable the Quality combobox when Video is selected."""
-        if self.format_combo.currentText() == 'Video':
+        if self.format_combo.currentText() == 'Video (.mp4)':
             self.quality_combo.setEnabled(True)
         else:
             self.quality_combo.setEnabled(False)
@@ -260,7 +260,7 @@ class YouTubeDownloader(QWidget):
                 self.download_mp3(output_folder, mp3=True)
             elif self.format_combo.currentText() == 'Audio (.webm) - Highest':
                 self.download_mp3(output_folder)
-            elif self.format_combo.currentText() == 'Video':
+            elif self.format_combo.currentText() == 'Video (.mp4)':
                 quality = self.quality_combo.currentText()
                 if not self.v_streams[quality]['progressive']:
                     self.download_mp4_dash(output_folder, quality)
@@ -281,7 +281,7 @@ class YouTubeDownloader(QWidget):
             root, ext = os.path.splitext(audio_file)
             mp3_file = Path(f'{root}.mp3')
             os.rename(audio_file, mp3_file)
-            
+
             return mp3_file
 
         return audio_file
@@ -291,7 +291,7 @@ class YouTubeDownloader(QWidget):
         Download video in mp4 format.
         Returns path (str) to the mp4 file.
         """
-        return self.v_streams[quality]['stream'].download(output_path=output_folder)
+        return self.v_streams[quality]['stream'].download(output_path=output_folder, filename=f'{self.title} ({quality}).mp4')
     
     def download_mp4_dash(self, output_folder: str, quality: str) -> str:
         """
@@ -306,7 +306,7 @@ class YouTubeDownloader(QWidget):
 
         # Merge audio to video and write file to output folder
         output_folder = os.path.normpath(output_folder)
-        output_file = os.path.join(output_folder, f'{self.title}.mp4')
+        output_file = os.path.join(output_folder, f'{self.title} ({quality}).mp4')
         merged = ffmpeg.output(video, audio, output_file, vcodec='copy', acodec='copy')
         merged.run()
 
@@ -342,17 +342,6 @@ class YouTubeDownloader(QWidget):
 
 def youtube_to_mp3(url, outdir):
     """Download mp3 file from a YouTube url."""
-    yt = YouTube(url)
-    # stream = yt.streams.filter(abr='160kbps').last()
-    stream = yt.streams.filter(only_audio=True).last()
-    
-    # Download the file
-    out_file = stream.download(output_path=outdir)
-    # Rename out_file to .mp3
-    base, ext = os.path.splitext(out_file)
-    new_file = Path(f'{base}.mp3')
-    os.rename(out_file, new_file)
-
     # Check success of download
     if new_file.exists():
         print(f'"{yt.title}" has been successfully downloaded')
