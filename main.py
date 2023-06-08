@@ -1,7 +1,7 @@
-import ffmpeg
 import os
 import requests
 import sys
+from moviepy.editor import VideoFileClip, AudioFileClip
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
@@ -295,14 +295,18 @@ class YouTubeDownloader(QWidget):
         v_track = self.v_streams[quality]['stream'].download(output_path=output_folder, filename='.vtemp')
         a_track = self.a_stream.download(output_path=output_folder, filename='.atemp')
 
-        video = ffmpeg.input(v_track)
-        audio = ffmpeg.input(a_track)
+        video = VideoFileClip(v_track)
+        audio = AudioFileClip(a_track)
 
-        # Merge audio and video
+        # Merge audio to video and write file
+        merged = video.set_audio(audio)
         output_folder = os.path.normpath(output_folder)
-        output_file = os.path.join(output_folder, f'{self.title}.mp4')
-        output = ffmpeg.output(video, audio, output_file, vcodec='copy', acodec='copy')
-        output.run()
+        output_file = os.path.join(output_folder, f'output_file.mp4')
+        print(output_file)
+        print(self.title)
+        merged.write_videofile(output_file, threads = 8)
+
+        os.rename(output_file, os.path.join(output_folder, f'{self.title}'))
 
         # Remove .atemp and .vtemp
         if os.path.exists(v_track):
