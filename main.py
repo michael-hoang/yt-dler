@@ -305,10 +305,10 @@ class YouTubeDownloader(QWidget):
                 self.search_individual_playlist_url(video_url)
                 self.populate_combobox
                 quality = self.quality_combo.currentText()
-                # if not self.v_streams[quality]['progressive']:
-                #     self.download_mp4_dash(output_folder, quality)
-                # else:
-                #     self.download_mp4_progressive(output_folder, quality)
+                if not self.v_streams[quality]['progressive']:
+                    self.download_mp4_dash(output_folder, quality)
+                else:
+                    self.download_mp4_progressive(output_folder, quality)
 
     def search_individual_playlist_url(self, video_url):
         """
@@ -386,23 +386,6 @@ class YouTubeDownloader(QWidget):
         self.v_streams = {}
         self.quality_combo.clear()
     
-
-        
-
-def youtube_to_mp3(url, outdir):
-    """Download mp3 file from a YouTube url."""
-    # Check success of download
-    if new_file.exists():
-        print(f'"{yt.title}" has been successfully downloaded')
-    else:
-        print(f'ERROR: "{yt.title}" could not be downloaded!')
-
-def playlist_to_mp3(url, outdir):
-    """Download mp3 files from a YouTube playlist url."""
-    p = Playlist(url)
-    for yt_url in p:
-        youtube_to_mp3(yt_url, outdir)
-
 
 if __name__ == '__main__':
     playlist_url = 'https://www.youtube.com/watch?v=YudHcBIxlYw&list=PLMGwXbxvTnARYX3nP-Boeur4VCJiCoewB'
