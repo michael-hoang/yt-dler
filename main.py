@@ -309,7 +309,8 @@ class YouTubeDownloader(QWidget):
         elif format == 'Video (.mp4)':
             for video_url in playlist:
                 self.search_individual_playlist_url(video_url)
-                self.populate_combobox
+                self.quality_combo.clear()
+                self.populate_combobox()
                 quality = self.quality_combo.currentText()
                 if not self.v_streams[quality]['progressive']:
                     self.download_mp4_dash(output_folder, quality)
