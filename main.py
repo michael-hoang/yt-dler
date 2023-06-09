@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QLineEdit, QComboBox, QProgressBar, QFileDialog, QCheckBox
 )
 from PyQt6.QtGui import QFont, QColor, QPixmap
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
 from urllib.error import URLError
@@ -388,14 +388,6 @@ class YouTubeDownloader(QWidget):
     
 
 if __name__ == '__main__':
-    playlist_url = 'https://www.youtube.com/watch?v=YudHcBIxlYw&list=PLMGwXbxvTnARYX3nP-Boeur4VCJiCoewB'
-    url = 'https://www.youtube.com/watch?v=ioNng23DkIM'
-    outdir = '/home/Mike/sdcard/Music/'
-
-    # youtube_to_mp3(url, outdir)
-    # youtube_to_mp4(url, outdir)
-    # playlist_to_mp3(playlist_url, outdir)
-
     app = QApplication(sys.argv)
     yt = YouTubeDownloader()
     yt.show()
