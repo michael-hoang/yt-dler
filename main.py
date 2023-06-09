@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QLineEdit, QComboBox, QProgressBar, QFileDialog, QCheckBox
 )
 from PyQt6.QtGui import QFont, QColor, QPixmap
-from PyQt6.QtCore import Qt, QThread, QUrl
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
 from urllib.error import URLError
@@ -26,6 +26,7 @@ class YouTubeDownloader(QWidget):
         self.title = None
         self.streams = None
         self.url_bar = None
+        self.url = ''
         self.title_label = None
         self.thumbnail_label = None
         self.playlist_btn = None
@@ -166,14 +167,14 @@ class YouTubeDownloader(QWidget):
 
     # YouTube Downloader Methods
 
-    def search_url(self) -> YouTube:
+    def search_url(self):
         """
         Create a YouTube object and initialize available streams from the inputted URL.
         """
         self.reset_attributes()
-        url = self.url_bar.text()
+        self.url = self.url_bar.text()
         try:
-            self.youtube = YouTube(url, use_oauth=True, allow_oauth_cache=True)
+            self.youtube = YouTube(self.url, use_oauth=True, allow_oauth_cache=True)
             self.streams = self.youtube.streams
             self.display_title()
             self.display_thumbnail()
@@ -256,21 +257,22 @@ class YouTubeDownloader(QWidget):
     def download(self):
         """Download the media file to the output folder."""
         output_folder = self.output_bar.text()
-        if os.path.exists(output_folder):
+        if os.path.exists(output_folder) and self.format_combo.currentIndex() != -1:
             if not self.playlist_btn.isChecked():
                 self.download_single(output_folder)
             else:
-                print('checked')
+                self.download_playlist(output_folder)
         else:
             pass
 
     def download_single(self, output_folder: str):
         """Download a single audio or video file."""
-        if self.format_combo.currentText() == 'Audio (.mp3) - Highest':
+        format = self.format_combo.currentText()
+        if format == 'Audio (.mp3) - Highest':
             self.download_mp3(output_folder, mp3=True)
-        elif self.format_combo.currentText() == 'Audio (.webm) - Highest':
+        elif format == 'Audio (.webm) - Highest':
             self.download_mp3(output_folder)
-        elif self.format_combo.currentText() == 'Video (.mp4)':
+        elif format == 'Video (.mp4)':
             quality = self.quality_combo.currentText()
             if not self.v_streams[quality]['progressive']:
                 self.download_mp4_dash(output_folder, quality)
@@ -278,8 +280,46 @@ class YouTubeDownloader(QWidget):
                 self.download_mp4_progressive(output_folder, quality)
     
     def download_playlist(self, output_folder: str):
-        """Download all audio or video from a playlist."""
-        
+        """
+        Download all audio or videso at the highest available quality from a playlist. 
+        """
+        playlist = Playlist(self.url)
+        format = self.format_combo.currentText()
+        youtube_copy = self.youtube
+        title_copy = self.title
+        streams_copy = self.streams
+        a_stream_copy = self.a_stream
+        v_streams_copy = self.v_streams
+        if format == 'Audio (.mp3) - Highest':
+            for video_url in playlist:
+                self.search_individual_playlist_url(video_url)
+                self.download_mp3(output_folder, mp3=True)
+
+        elif format == 'Audio (.webm) - Highest':
+            for video_url in playlist:
+                self.search_individual_playlist_url(video_url)
+                self.download_mp3(output_folder)
+
+        elif format == 'Video (.mp4)':
+            for video_url in playlist:
+                self.search_individual_playlist_url(video_url)
+                self.populate_combobox
+                quality = self.quality_combo.currentText()
+                # if not self.v_streams[quality]['progressive']:
+                #     self.download_mp4_dash(output_folder, quality)
+                # else:
+                #     self.download_mp4_progressive(output_folder, quality)
+
+    def search_individual_playlist_url(self, video_url):
+        """
+        Create a YouTube object and initialize available streams for a video from playlist.
+        """
+        self.youtube = YouTube(video_url, use_oauth=True, allow_oauth_cache=True)
+        self.streams =self.youtube.streams
+        self.display_title()
+        self.display_thumbnail()
+        self.get_streams()
+
 
     def download_mp3(self, output_folder: str, mp3=False) -> str:
         """
@@ -335,6 +375,7 @@ class YouTubeDownloader(QWidget):
         Reset the state of all widgets.
         """
         self.youtube = None
+        self.url = ''
         self.title = None
         self.streams = None
         self.title_label.clear()
