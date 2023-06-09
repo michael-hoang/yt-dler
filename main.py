@@ -38,7 +38,7 @@ class YouTubeDownloader(QWidget):
         self.dl_btn = None
 
         self.setWindowTitle('YouTube Downloader')
-        self.setFixedSize(420, self.height())
+        self.setFixedSize(425, self.height())
 
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
@@ -129,7 +129,7 @@ class YouTubeDownloader(QWidget):
         quality_layout = QVBoxLayout()
         quality_label = QLabel('Quality:')
         self.quality_combo = QComboBox()
-        self.quality_combo.setFixedWidth(150)
+        self.quality_combo.setFixedWidth(160)
         quality_layout.addWidget(quality_label)
         quality_layout.addWidget(self.quality_combo)
         self.quality_combo.setEnabled(False)
