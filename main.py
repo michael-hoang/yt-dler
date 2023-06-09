@@ -38,6 +38,7 @@ class YouTubeDownloader(QWidget):
         self.dl_btn = None
 
         self.setWindowTitle('YouTube Downloader')
+        self.setFixedSize(420, self.height())
 
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
@@ -290,15 +291,20 @@ class YouTubeDownloader(QWidget):
         streams_copy = self.streams
         a_stream_copy = self.a_stream
         v_streams_copy = self.v_streams
+        index = 1
         if format == 'Audio (.mp3) - Highest':
             for video_url in playlist:
                 self.search_individual_playlist_url(video_url)
                 self.download_mp3(output_folder, mp3=True)
+                print(f'Downloaded {index}. {self.title}')
+                index += 1
 
         elif format == 'Audio (.webm) - Highest':
             for video_url in playlist:
                 self.search_individual_playlist_url(video_url)
                 self.download_mp3(output_folder)
+                print(f'Downloaded {index}. {self.title}')
+                index += 1
 
         elif format == 'Video (.mp4)':
             for video_url in playlist:
@@ -307,8 +313,12 @@ class YouTubeDownloader(QWidget):
                 quality = self.quality_combo.currentText()
                 if not self.v_streams[quality]['progressive']:
                     self.download_mp4_dash(output_folder, quality)
+                    print(f'Downloaded {index}. {self.title}')
+                    index += 1
                 else:
                     self.download_mp4_progressive(output_folder, quality)
+                    print(f'Downloaded {index}. {self.title}')
+                    index += 1
 
     def search_individual_playlist_url(self, video_url):
         """
