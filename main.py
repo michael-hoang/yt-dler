@@ -20,7 +20,7 @@ class YouTubeDownloader(QWidget):
     def __init__(self):
         """Initialize the GUI and its attributes."""
         super().__init__()
-        self.setWindowIcon(QIcon('./play-icon.png'))
+        self.setWindowIcon(QIcon('./img/play-icon.png'))
 
         # Attributes
         self.youtube = None
