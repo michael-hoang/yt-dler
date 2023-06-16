@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QApplication, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget,
     QLineEdit, QComboBox, QProgressBar, QFileDialog, QCheckBox
 )
-from PyQt6.QtGui import QFont, QColor, QPixmap
+from PyQt6.QtGui import QFont, QColor, QPixmap, QIcon
 from PyQt6.QtCore import Qt
 from pytube import Playlist, YouTube
 from pytube.exceptions import RegexMatchError, VideoUnavailable
@@ -20,6 +20,7 @@ class YouTubeDownloader(QWidget):
     def __init__(self):
         """Initialize the GUI and its attributes."""
         super().__init__()
+        self.setWindowIcon(QIcon('./play-icon.png'))
 
         # Attributes
         self.youtube = None
@@ -303,7 +304,10 @@ class YouTubeDownloader(QWidget):
             for video_url in playlist:
                 self.search_individual_playlist_url(video_url)
                 self.download_mp3(output_folder)
-                print(f'Downloaded {index}. {self.title}')
+                try:
+                    print(f'Downloaded {index}. {self.title}')
+                except UnicodeEncodeError:
+                    print(f'Dowloaded {index}. <UnicodeEncodeError>')
                 index += 1
 
         elif format == 'Video (.mp4)':
